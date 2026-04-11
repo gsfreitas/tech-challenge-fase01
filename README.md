@@ -16,23 +16,48 @@ Construir um pipeline end-to-end de predição de churn (cancelamento de cliente
 ```
 tech-challenge-fase01/
 │
-├── data/                   # Datasets (não versionados — ver instruções abaixo)
-│   ├── raw/                # Dados brutos originais
-│   └── processed/          # Dados tratados e prontos para modelagem
+├── data/ # Dados do projeto (não versionados)
+│ ├── raw/ # Dados brutos originais (ex: CSV original)
+│ └── processed/ # Dados tratados e prontos para modelagem
 │
-├── notebooks/              # Jupyter Notebooks de exploração e experimentação
-│   ├── 01_eda.ipynb        # Análise Exploratória de Dados (EDA)
-│   ├── 02_preprocessing.ipynb
-│   ├── 03_modeling.ipynb
-│   └── 04_evaluation.ipynb
+├── notebooks/ # Notebooks para exploração e análise
+│ ├── exploratory/ # Análises exploratórias (EDA)
+│ │ └── 01_eda.ipynb # Análise inicial dos dados
+│ └── reports/ # Notebooks para apresentação
 │
-├── src/                    # Código-fonte modularizado
-│   ├── data/               # Scripts de ingestão e processamento
-│   ├── features/           # Engenharia de features
-│   ├── models/             # Treinamento e avaliação de modelos
-│   └── api/                # API de inferência (FastAPI)
+├── src/ # Código-fonte principal (produção)
+│ ├── api/ # API de inferência (FastAPI)
+│ │ └── init.py
+│ │
+│ ├── data/ # Scripts de ingestão e preparação de dados
+│ │ └── init.py
+│ │
+│ ├── features/ # Engenharia de features
+│ │ └── init.py
+│ │
+│ ├── models/ # Definição e registro de modelos
+│ │ ├── init.py
+│ │ └── register.py # Funções para salvar/carregar modelos
+│ │
+│ ├── training/ # Scripts de treinamento
+│ │ ├── init.py
+│ │ └── train.py # Pipeline de treino (baseline + MLP)
+│ │
+│ └── utils/ # Funções utilitárias gerais
+│ ├── init.py
+│ └── utils.py # Funções auxiliares (ex: logging, seeds, helpers)
 │
-├── mlruns/                 # Experimentos MLflow (não versionados)
+├── tests/ # Testes automatizados
+│ └── test_basic.py # Testes iniciais (smoke test / validações básicas)
+│
+├── docs/ # Documentação do projeto
+│ # (ML Canvas, Model Card, arquitetura, etc.)
+│
+├── models/ # Modelos treinados (não versionados)
+│ # (ex: .pkl, .pt)
+│
+├── mlruns/ # Experimentos do MLflow (não versionado)
+│
 ├── LICENSE
 └── README.md
 ```
@@ -58,6 +83,8 @@ Após o download, coloque os arquivos em `data/raw/`.
 
 - Python 3.10+
 - [Poetry](https://python-poetry.org/) para gerenciamento de dependências
+- [UV](https://docs.astral.sh/uv/) para gerenciamento de dependências. 
+- Artigo sobre UV: [UV Python Gerenciador de Pacotes Comparativo C#.](https://zocate.li/posts/2026/uv-python-gerenciador-pacotes-comparativo-csharp/)
 - Docker (opcional, para containerização da API)
 
 ### Instalação
