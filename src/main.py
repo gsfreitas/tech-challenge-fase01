@@ -1,6 +1,9 @@
-def main():
-    print("Projeto configurado com sucesso")
+import logging
+import pipeline
 
+logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    main()
+    logging.info("Iniciando pipeline...")
+    pipeline.main()
+    logging.info("Pipeline finalizado.")
