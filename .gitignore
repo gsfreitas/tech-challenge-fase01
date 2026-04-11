@@ -1,0 +1,25 @@
+# Ambiente virtual
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MLflow
+mlruns/
+
+# Dados
+data/raw/
+data/processed/
+
+# Modelos
+models/*.pkl
+models/*.pt
+models/*.joblib
+
+# Sistema
+.DS_Store
+Thumbs.db
