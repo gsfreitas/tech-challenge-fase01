@@ -1,25 +1,62 @@
+# =========================
 # Ambiente virtual
+# =========================
+.env
 .venv/
+env/
+venv/
 
+# =========================
 # Python
+# =========================
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
+# =========================
+# Build / Packaging
+# =========================
+*.egg-info/
+dist/
+build/
+
+# =========================
 # Jupyter
+# =========================
 .ipynb_checkpoints/
 
+# =========================
 # MLflow
+# =========================
 mlruns/
 
-# Dados
+# =========================
+# Dados (não versionar)
+# =========================
 data/raw/
 data/processed/
 
-# Modelos
+# =========================
+# Modelos treinados
+# =========================
 models/*.pkl
 models/*.pt
 models/*.joblib
 
-# Sistema
+# =========================
+# Logs / temporários
+# =========================
+*.log
+*.tmp
+
+# =========================
+# Sistema operacional
+# =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# VS Code
+# =========================
+.vscode/

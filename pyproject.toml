@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tech-challenge-fase01"
+version = "0.1.0"
+description = "Projeto de previsao de churn com foco em EDA e baseline"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+
+authors = [
+    { name = "Grupo 91" }
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+keywords = ["churn", "machine-learning", "eda", "baseline"]
+
+dependencies = [
+    "pandas>=2.0,<3.0",
+    "numpy>=1.24,<2.0",
+    "scikit-learn>=1.3,<2.0",
+    "matplotlib>=3.8,<4.0",
+    "seaborn>=0.13,<1.0",
+    "jupyter>=1.0,<2.0",
+    "ipykernel>=6.0,<7.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0,<9.0",
+    "pytest-cov>=4.0,<6.0",
+    "ruff>=0.1,<1.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/gsfreitas/tech-challenge-fase01"
+Documentation = "https://github.com/gsfreitas/tech-challenge-fase01#readme"
+Repository = "https://github.com/gsfreitas/tech-challenge-fase01"
+Issues = "https://github.com/gsfreitas/tech-challenge-fase01/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
