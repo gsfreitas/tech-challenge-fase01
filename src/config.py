@@ -1,0 +1,1 @@
+path = '../../data/ibm_telco_churn.csv'
