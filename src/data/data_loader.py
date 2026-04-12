@@ -1,9 +1,10 @@
-import logging
 import csv
-import pandas as pd
+import logging
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO)
+import pandas as pd
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class DataLoader:
@@ -18,7 +19,7 @@ class DataLoader:
     def _validate_csv_format(self) -> None:
         """Valida se o conteúdo do arquivo tem estrutura de CSV."""
         try:
-            with open(self.file_path, 'r', encoding='utf-8') as f:
+            with open(self.file_path, encoding='utf-8') as f:
                 sample = f.read(2048)
                 csv.Sniffer().sniff(sample)
         except csv.Error as e:

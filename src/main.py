@@ -4,6 +4,6 @@ import pipeline
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    logging.info("Iniciando pipeline...")
+    logging.info("=== Iniciando pipeline... ===")
     pipeline.main()
-    logging.info("Pipeline finalizado.")
+    logging.info("=== Pipeline finalizado. ===")
