@@ -28,7 +28,10 @@ class FeatureEngineer:
             raise ValueError(f"Colunas faltando para encoding: {missing_cols}")
         else:
             logging.info("Todas as colunas necessárias para encoding estão presentes.")
-            return pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+            
+            df_encoded = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+            logging.info(f"Shape do dataframe depois do encoding: {df_encoded.shape}")
+            return df_encoded
     
     def prepare_target(self, df: pd.DataFrame, target_col='Churn') -> pd.DataFrame:
         """
