@@ -19,6 +19,12 @@ class DataCleaner:
         # Análise de missing values
         missing_values = self.df.isnull().sum()
         
+        self.df['TotalCharges'] = pd.to_numeric(self.df['TotalCharges'], errors='coerce')
+        self.df['TotalCharges'] = self.df['TotalCharges'].fillna(self.df['TotalCharges'].median())
+        
+        self.df['MonthlyCharges'] = pd.to_numeric(self.df['MonthlyCharges'], errors='coerce')
+        self.df['MonthlyCharges'] = self.df['MonthlyCharges'].fillna(self.df['MonthlyCharges'].median())
+
         # Se houver colunas, preencher com mediana
         for col in self.df.columns:
             if missing_values[col] > 0:
