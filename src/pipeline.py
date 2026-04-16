@@ -19,14 +19,14 @@ def main():
 
     # Etapa 3: Engenharia de features
     feature_engineer = FeatureEngineer(df=df_cleaned)
-    df_cleaned = feature_engineer.create_family_status()  # ← sem df=, usa self.df
-    df_cleaned = feature_engineer.create_tenure_bins()  # ← sem df
-    df_cleaned = feature_engineer.create_family_size_proxy()  # ← sem df=
-    df_cleaned = feature_engineer.create_risk_profile()  # ← sem df=
-    df_cleaned = feature_engineer.create_risk_combo()  # ← sem df=
-    df_cleaned = feature_engineer.create_support_bundle()  # ← sem df=
-    df_cleaned = feature_engineer.create_diff_monthly_charges()  # ← sem df=
-    df_encoded = feature_engineer.encode_categorical_features(df_cleaned)  # ← sem df=, usa self.df
+    df_cleaned = feature_engineer.create_family_status()
+    df_cleaned = feature_engineer.create_tenure_bins()
+    df_cleaned = feature_engineer.create_family_size_proxy()
+    df_cleaned = feature_engineer.create_risk_profile()
+    df_cleaned = feature_engineer.create_risk_combo()
+    df_cleaned = feature_engineer.create_support_bundle()
+    df_cleaned = feature_engineer.create_diff_monthly_charges()
+    df_encoded = feature_engineer.encode_categorical_features(df_cleaned)
 
     feature_engineer.prepare_target(df=df_encoded)
 
