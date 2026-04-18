@@ -113,8 +113,8 @@ class FeatureEngineer:
     def create_diff_monthly_charges(self) -> pd.DataFrame:
         """
         Cria a variável 'DiffMonthlyCharges' calculando a diferença entre 'MonthlyCharges' e 'TotalCharges' dividida por 'tenure'.
-        Calula a diferença entre o valor atual e o valor médio histórico
-        Pode indicar se houve upgrade, downgrade de plano ou mudança no consumo
+        Calcula a diferença entre o valor atual e o valor médio histórico.
+        Pode indicar se houve upgrade, downgrade de plano ou mudança no consumo.
         """
 
         required_cols = ['MonthlyCharges', 'TotalCharges', 'tenure']
@@ -122,11 +122,14 @@ class FeatureEngineer:
         if missing_cols:
             logging.error(f"Colunas faltando para criação de 'DiffMonthlyCharges': {missing_cols}")
             raise ValueError(f"Colunas faltando para criação de 'DiffMonthlyCharges': {missing_cols}")
-        else:
-            logging.info("Todas as colunas necessárias para criar 'DiffMonthlyCharges' estão presentes.")
-            self.df['DiffMonthlyCharges'] = (self.df['MonthlyCharges'] - self.df['TotalCharges'] / self.df['tenure']).fillna(0)
-            logging.info("Variável 'DiffMonthlyCharges' criada com sucesso.")
-            return self.df
+
+        logging.info("Todas as colunas necessárias para criar 'DiffMonthlyCharges' estão presentes.")
+
+        avg_monthly = self.df['TotalCharges'] / self.df['tenure'].replace(0, np.nan)
+        self.df['DiffMonthlyCharges'] = (self.df['MonthlyCharges'] - avg_monthly).fillna(0)
+
+        logging.info("Variável 'DiffMonthlyCharges' criada com sucesso.")
+        return self.df
 
     def encode_categorical_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -162,6 +165,6 @@ class FeatureEngineer:
             raise ValueError(f"Coluna alvo '{target_col}' não encontrada no dataframe.")
         
         df_final = df.copy()
-        df_final[target_col] = df_final[target_col].map({'Yes': 1, 'No': 0})
+        df_final[target_col] = df_final[target_col].map({'Yes': 1, 'No': 0}).astype(int)
         logging.info(f"Variável alvo '{target_col}' convertida para binário com sucesso.")
         return df_final

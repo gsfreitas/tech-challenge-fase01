@@ -28,7 +28,8 @@ def main():
     df_cleaned = feature_engineer.create_diff_monthly_charges()
     df_encoded = feature_engineer.encode_categorical_features(df_cleaned)
 
-    feature_engineer.prepare_target(df=df_encoded)
+    feature_engineer.prepare_target(df=df_cleaned, target_col='Churn')
+    
 
     # insere o arquivo modificado em data/processed para futuras etapas de modelagem
     df_encoded.to_csv(get_processed_data_path() / "processed_customer_churn.csv", index=False)
