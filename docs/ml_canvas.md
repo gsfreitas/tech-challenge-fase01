@@ -1,8 +1,5 @@
-stakeholders
-problema
-decisão a ser tomada
-métrica de negócio
-métrica técnica
-riscos
-dados disponíveis
-https://medium.com/louis-dorard/from-data-to-ai-with-the-machine-learning-canvas-part-i-d171b867b047
+## 🧩 ML Canvas
+
+Este documento descreve a definição do problema de Machine Learning, conectando objetivos de negócio, dados, modelagem e estratégia de monitoramento para predição de churn.
+
+![ML Canvas](docs/ml-canvas.png)
