@@ -5,7 +5,7 @@ from typing import Optional
 
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class DataLoader:
@@ -20,7 +20,7 @@ class DataLoader:
     def _validate_csv_format(self) -> None:
         """Valida se o conteúdo do arquivo tem estrutura de CSV."""
         try:
-            with open(self.file_path, encoding='utf-8') as f:
+            with open(self.file_path, encoding="utf-8") as f:
                 sample = f.read(2048)
                 csv.Sniffer().sniff(sample)
         except csv.Error as e:
@@ -33,8 +33,10 @@ class DataLoader:
         if not self.file_path.exists():
             raise FileNotFoundError(f"Arquivo não encontrado: {self.file_path}")
 
-        if self.file_path.suffix.lower() != '.csv':
-            raise ValueError(f"O arquivo deve ser um CSV. Recebido: {self.file_path.suffix}")
+        if self.file_path.suffix.lower() != ".csv":
+            raise ValueError(
+                f"O arquivo deve ser um CSV. Recebido: {self.file_path.suffix}"
+            )
 
         self._validate_csv_format()
 
@@ -42,10 +44,14 @@ class DataLoader:
             self.df = pd.read_csv(self.file_path)
             if self.df.empty:
                 raise ValueError("O dataset está vazio.")
-            logging.info(f"Dados carregados com sucesso: {self.df.shape[0]} linhas, {self.df.shape[1]} colunas")
+            logger.info(
+                "Dados carregados com sucesso: %s linhas, %s colunas",
+                self.df.shape[0],
+                self.df.shape[1],
+            )
 
         except Exception as e:
-            logging.error(f"Erro ao carregar os dados: {e}")
+            logger.exception("Erro ao carregar os dados")
             raise
 
         return self.df
