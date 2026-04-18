@@ -45,7 +45,9 @@ tech-challenge-fase01/
 │ │
 │ └── utils/ # Funções utilitárias gerais
 │ ├── init.py
-│ └── utils.py # Funções auxiliares (ex: logging, seeds, helpers)
+│ ├── config.py # Paths e configurações globais
+│ ├── reproducibility.py # Controle de seeds
+│ └── logging_config.py # Configuração de logging
 │
 ├── tests/ # Testes automatizados
 │ └── test_basic.py # Testes iniciais (smoke test / validações básicas)
@@ -61,6 +63,45 @@ tech-challenge-fase01/
 ├── LICENSE
 └── README.md
 ```
+
+---
+
+## 🔄 Fluxo do Projeto
+
+O projeto segue uma abordagem modular, separando responsabilidades entre exploração, processamento e modelagem:
+
+1. **Ingestão de dados**
+   - Leitura do dataset bruto em `data/raw/`
+   - Centralizada em `src/data/data_loader.py`
+
+2. **Limpeza e preparação**
+   - Tratamento inicial de dados
+   - Implementado em `src/data/data_cleaner.py`
+
+3. **Exploração (EDA)**
+   - Análises exploratórias nos notebooks
+   - `notebooks/exploratory/`
+
+4. **Configuração e reprodutibilidade**
+   - Paths e constantes centralizados em `src/utils/config.py`
+   - Seed global definida em `src/utils/reproducibility.py`
+
+5. **Modelagem (em evolução)**
+   - Baselines e MLP serão implementados nas próximas etapas
+
+6. **API de inferência (futuro)**
+   - Será implementada com FastAPI em `src/api/`
+
+---
+
+### Configuração de ambiente e reprodutibilidade
+
+O projeto utiliza uma configuração centralizada para garantir consistência entre ambientes:
+
+- Paths definidos em `src/utils/config.py`
+- Seed global definida em `src/utils/reproducibility.py`
+
+Isso garante que experimentos sejam reproduzíveis.
 
 ---
 
@@ -109,6 +150,12 @@ jupyter notebook notebooks/
 
 ### Rastreamento de Experimentos (MLflow)
 
+Os experimentos de modelagem são rastreados utilizando MLflow, permitindo:
+
+- registro de métricas
+- comparação entre modelos
+- versionamento de experimentos
+
 ```bash
 mlflow ui
 # Acesse: http://localhost:5000
@@ -155,6 +202,17 @@ pytest tests/ -v
 | Baseline (LR) | — | — | — |
 | Random Forest | — | — | — |
 | XGBoost | — | — | — |
+
+---
+
+
+## 📚 Documentação
+
+A documentação do projeto está disponível em `docs/`:
+
+- `ml_canvas.md` → definição do problema e estratégia de ML
+- `problem_definition.md` → detalhamento técnico do problema
+- (futuro) `model_card.md` → descrição do modelo e limitações
 
 ---
 
