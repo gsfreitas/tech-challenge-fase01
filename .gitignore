@@ -32,10 +32,13 @@ build/
 mlruns/
 
 # =========================
-# Dados (não versionar)
+# Dados (dados não versionados)
 # =========================
-data/raw/
-data/processed/
+data/raw/*
+data/processed/*
+
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 
 # =========================
 # Modelos treinados
