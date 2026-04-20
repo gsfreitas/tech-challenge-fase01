@@ -7,69 +7,88 @@ logger = logging.getLogger(__name__)
 
 class DataCleaner:
     """
-    Responsável por limpeza e pré-processamento do dataset
+    Responsável por limpeza determinística do dataset, sem calcular
+    estatísticas globais que possam contaminar o split train/test.
+
+    Operações de imputação (mediana/moda) são responsabilidade do
+    Pipeline sklearn (SimpleImputer), que é fitado apenas no fold de
+    treino. Aqui só fazemos:
+
+    - Conversão de tipos (strings numéricas -> float, com NaN onde falhar)
+    - Remoção de duplicatas exatas
+    - Log de qualidade dos dados
+
+    Missing values permanecem como NaN e são tratados a jusante.
     """
+
+    # Colunas que vêm como string no CSV mas deveriam ser numéricas
+    NUMERIC_STRING_COLUMNS = ("TotalCharges", "MonthlyCharges")
 
     def __init__(self, df: pd.DataFrame):
         self.df = df.copy()
 
     def clean_data(self) -> pd.DataFrame:
         """
-        Realiza limpeza básica dos dados, como tratamento de valores nulos
-        e remoção de duplicados.
+        Executa limpeza determinística do dataset.
+
+        Retorna DataFrame com tipos corrigidos e duplicatas removidas.
+        NaN permanecem e são tratados pelo pipeline sklearn.
         """
-        # Análise de missing values
-        missing_values = self.df.isnull().sum()
+        self._coerce_numeric_columns()
+        self._log_missing_values()
+        self._drop_duplicates()
 
-        self.df["TotalCharges"] = pd.to_numeric(
-            self.df["TotalCharges"], errors="coerce"
-        )
-        self.df["TotalCharges"] = self.df["TotalCharges"].fillna(
-            self.df["TotalCharges"].median()
-        )
-
-        self.df["MonthlyCharges"] = pd.to_numeric(
-            self.df["MonthlyCharges"], errors="coerce"
-        )
-        self.df["MonthlyCharges"] = self.df["MonthlyCharges"].fillna(
-            self.df["MonthlyCharges"].median()
-        )
-
-        # Se houver colunas, preencher com mediana
-        for col in self.df.columns:
-            if missing_values[col] > 0:
-                if self.df[col].dtype in ["float64", "int64"]:
-                    median_value = self.df[col].median()
-                    self.df[col].fillna(median_value, inplace=True)
-                    logger.info(
-                        "Preenchidos %s valores nulos na coluna '%s' com a mediana (%s)",
-                        missing_values[col],
-                        col,
-                        median_value,
-                    )
-                else:
-                    mode_value = self.df[col].mode()[0]
-                    self.df[col].fillna(mode_value, inplace=True)
-                    logger.info(
-                        "Preenchidos %s valores nulos na coluna '%s' com a moda ('%s')",
-                        missing_values[col],
-                        col,
-                        mode_value,
-                    )
-
-        logger.info("Limpeza de dados concluída. Nenhum valor nulo restante.")
-
-        # Remove linhas duplicadas
-        initial_shape = self.df.shape
-        self.df.drop_duplicates(inplace=True)
         logger.info(
-            "Removidos %s registros duplicados",
-            initial_shape[0] - self.df.shape[0],
+            "Limpeza concluída: %s linhas, %s colunas, %s valores nulos restantes (tratados no pipeline)",
+            self.df.shape[0],
+            self.df.shape[1],
+            self.df.isnull().sum().sum(),
         )
-
-        # Remove linhas com valores nulos
-        # initial_shape = self.df.shape
-        # self.df.dropna(inplace=True)
-        # logging.info(f"Removidos {initial_shape[0] - self.df.shape[0]} registros com valores nulos")
 
         return self.df
+
+    def _coerce_numeric_columns(self) -> None:
+        """Converte colunas numéricas em string para float, gerando NaN em falhas."""
+        for col in self.NUMERIC_STRING_COLUMNS:
+            if col not in self.df.columns:
+                logger.warning("Coluna '%s' ausente; pulando conversão.", col)
+                continue
+
+            before_na = self.df[col].isnull().sum()
+            self.df[col] = pd.to_numeric(self.df[col], errors="coerce")
+            after_na = self.df[col].isnull().sum()
+
+            new_na = after_na - before_na
+            if new_na > 0:
+                logger.info(
+                    "Coluna '%s' convertida para numérico; %s valores coagidos para NaN.",
+                    col,
+                    new_na,
+                )
+
+    def _log_missing_values(self) -> None:
+        """Apenas loga o panorama de missing values sem tratá-los."""
+        missing = self.df.isnull().sum()
+        missing = missing[missing > 0]
+        if missing.empty:
+            logger.info("Nenhum valor nulo encontrado após coerção de tipos.")
+            return
+
+        for col, count in missing.items():
+            pct = 100 * count / len(self.df)
+            logger.info(
+                "Coluna '%s': %s valores nulos (%.2f%%) -- serão tratados no pipeline sklearn.",
+                col,
+                count,
+                pct,
+            )
+
+    def _drop_duplicates(self) -> None:
+        """Remove linhas duplicadas exatas."""
+        initial_shape = self.df.shape
+        self.df.drop_duplicates(inplace=True)
+        removed = initial_shape[0] - self.df.shape[0]
+        if removed > 0:
+            logger.info("Removidos %s registros duplicados.", removed)
+        else:
+            logger.info("Nenhum registro duplicado encontrado.")

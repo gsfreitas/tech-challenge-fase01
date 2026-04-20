@@ -43,6 +43,8 @@ data/processed/
 models/*.pkl
 models/*.pt
 models/*.joblib
+**/mlruns/
+models/*.pkl
 
 # =========================
 # Logs / temporários
