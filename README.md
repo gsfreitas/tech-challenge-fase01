@@ -242,10 +242,13 @@ Distribuído sob a licença MIT. Consulte `LICENSE` para mais informações.
 
 ---
 
-## 👤 Autors
+## 👤 Authors
 
 **Gabriel**
 Senior DevOps Engineer @ Telefônica Brasil
 
 **Diego**
 Full Stack Developer @ Eldorado Research Institute
+
+**Deyvid**
+Fullstack Developer @ Minsait
