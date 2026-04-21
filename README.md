@@ -242,8 +242,10 @@ Distribuído sob a licença MIT. Consulte `LICENSE` para mais informações.
 
 ---
 
-## 👤 Autor
+## 👤 Autors
 
-**Gabriel**  
-Senior DevOps Engineer @ Telefônica Brasil  
-Pós-graduando em Machine Learning Engineering
+**Gabriel**
+Senior DevOps Engineer @ Telefônica Brasil
+
+**Diego**
+Full Stack Developer @ Eldorado Research Institute
