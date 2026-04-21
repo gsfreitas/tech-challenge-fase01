@@ -1,3 +1,5 @@
+"""Seeds globais para reprodutibilidade em Python, NumPy e PyTorch."""
+
 import os
 import random
 

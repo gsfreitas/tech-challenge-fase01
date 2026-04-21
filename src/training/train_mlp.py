@@ -109,9 +109,9 @@ def split_train_val_test(
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────
 # Loops de treino e avaliação
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────
 
 def train_one_epoch(
     model: nn.Module,
@@ -120,8 +120,10 @@ def train_one_epoch(
     loss_fn: nn.Module,
     device: torch.device,
 ) -> float:
-    """Executa uma epoch de treino. Retorna loss média da epoch."""
-    model.train()  # ativa dropout + batchnorm em modo treino
+    """
+    Executa uma epoch de treino. Retorna loss média da epoch
+    """
+    model.train()
     total_loss = 0.0
     n_samples = 0
 
@@ -129,11 +131,11 @@ def train_one_epoch(
         X_batch = X_batch.to(device)
         y_batch = y_batch.to(device)
 
-        optimizer.zero_grad()          # zera gradientes acumulados
-        logits = model(X_batch)        # forward pass
+        optimizer.zero_grad()
+        logits = model(X_batch)
         loss = loss_fn(logits, y_batch)
-        loss.backward()                # backward pass (autograd)
-        optimizer.step()               # atualiza pesos
+        loss.backward()
+        optimizer.step()
 
         total_loss += loss.item() * X_batch.size(0)
         n_samples += X_batch.size(0)
@@ -149,11 +151,10 @@ def evaluate(
     device: torch.device,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
-    Avalia o modelo em um loader. Retorna (loss_média, probs, targets).
-
-    Usado tanto para validação durante treino quanto para avaliação final.
+    Avalia o modelo em um loader
+    Usado tanto para validação durante treino quanto para avaliação final
     """
-    model.eval()  # desativa dropout
+    model.eval()
     total_loss = 0.0
     n_samples = 0
     all_probs = []
@@ -178,12 +179,14 @@ def evaluate(
     return avg_loss, probs_arr, targets_arr
 
 
-# ─────────────────────────────────────────────────────────────
+# ────────
 # Métricas
-# ─────────────────────────────────────────────────────────────
+# ────────
 
 def compute_metrics(y_true: np.ndarray, y_proba: np.ndarray, threshold: float = 0.5) -> dict:
-    """Calcula as 6 métricas do projeto para um conjunto."""
+    """
+    Calcula as 6 métricas do projeto
+    """
     y_pred = (y_proba > threshold).astype(int)
     return {
         "accuracy": accuracy_score(y_true, y_pred),
@@ -195,12 +198,14 @@ def compute_metrics(y_true: np.ndarray, y_proba: np.ndarray, threshold: float = 
     }
 
 
-# ─────────────────────────────────────────────────────────────
+# ──────────────────
 # Pipeline principal
-# ─────────────────────────────────────────────────────────────
+# ──────────────────
 
 def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
-    """Orquestra o treino do MLP end-to-end."""
+    """
+    Orquestra o treino do MLP
+    """
     set_global_seed(RANDOM_STATE)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -209,10 +214,10 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
     mlflow.set_tracking_uri(get_mlflow_tracking_uri())
     mlflow.set_experiment(experiment_name)
 
-    # 1. Carrega e prepara dados (mesma função dos baselines)
+    # Carrega e prepara dados
     X, y = load_and_prepare_data()
 
-    # 2. Split train/val/test
+    # Divide train/val/test
     X_train, X_val, X_test, y_train, y_val, y_test = split_train_val_test(
         X, y,
         test_size=TEST_SIZE * 0.75,  # 0.15
@@ -220,7 +225,7 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
         random_state=RANDOM_STATE,
     )
 
-    # 3. Fita o preprocessor APENAS no treino (evita leakage)
+    # fita o preprocessor no treino
     numeric_features, categorical_features = split_feature_types(X_train)
     preprocessor = build_preprocessor(numeric_features, categorical_features)
     logger.info("Fitando preprocessor apenas no train set...")
@@ -233,7 +238,7 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
     n_features = X_train_prep.shape[1]
     logger.info("Features após preprocessing: %d", n_features)
 
-    # 4. Dataloaders
+    # dataloaders
     train_loader, val_loader, test_loader = build_dataloaders(
         X_train_prep, y_train.values,
         X_val_prep, y_val.values,
@@ -241,7 +246,7 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
         batch_size=MLP_BATCH_SIZE,
     )
 
-    # 5. Modelo, loss, optimizer
+    # modelo, loss, optimizer
     model = ChurnMLP(
         n_features=n_features,
         hidden_dims=MLP_HIDDEN_DIMS,
@@ -258,7 +263,7 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
         patience=MLP_EARLY_STOPPING_PATIENCE, mode="min"
     )
 
-    # 6. MLflow run
+    # MLflow
     with mlflow.start_run(run_name="mlp_pytorch") as run:
         # log hyperparameters
         mlflow.log_params({
@@ -277,7 +282,7 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
             "n_trainable_params": model.count_parameters(),
         })
 
-        # 7. Loop de treino
+        # loop de treino
         logger.info("═══ Iniciando treino ═══")
         for epoch in range(1, MLP_MAX_EPOCHS + 1):
             train_loss = train_one_epoch(model, train_loader, optimizer, loss_fn, device)
@@ -298,14 +303,14 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
             if early_stopping.should_stop:
                 break
 
-        # 8. Restaura melhor modelo e avalia no test
+        # restaura melhor modelo e avalia no test
         early_stopping.restore_best(model)
 
         logger.info("═══ Avaliação final no test set ═══")
         _, test_probs, test_targets = evaluate(model, test_loader, loss_fn, device)
         test_metrics = compute_metrics(test_targets, test_probs)
 
-        # log holdout_ metrics (compatível com nomenclatura dos baselines)
+        # log holdout_ metrics
         mlflow.log_metrics({f"holdout_{k}": v for k, v in test_metrics.items()})
         mlflow.log_metric("best_epoch", early_stopping.best_epoch)
 
@@ -315,21 +320,21 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
             test_metrics["f1"], test_metrics["recall"], test_metrics["precision"],
         )
 
-        # 9. Salva artefatos: modelo PyTorch + preprocessor
+        # salva artefatos: modelo PyTorch + preprocessor
         models_dir = get_models_dir()
         models_dir.mkdir(parents=True, exist_ok=True)
 
-        # state_dict (pesos só)
+        # state_dict
         model_path = models_dir / "mlp.pt"
         torch.save(model.state_dict(), model_path)
         mlflow.log_artifact(str(model_path))
 
-        # preprocessor fitado (pra API usar depois)
+        # preprocessor fitado
         preprocessor_path = models_dir / "mlp_preprocessor.pkl"
         joblib.dump(preprocessor, preprocessor_path)
         mlflow.log_artifact(str(preprocessor_path))
 
-        # MLflow pytorch log (formato MLflow nativo, útil para serving)
+        # MLflow pytorch log
         mlflow.pytorch.log_model(model, name="model")
 
         logger.info("Artefatos salvos em %s", models_dir)

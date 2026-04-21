@@ -1,25 +1,22 @@
 from pathlib import Path
 
-# root
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
-# diretorios principais
 DATA_DIR = ROOT_DIR / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
-MODELS_DIR = ROOT_DIR / "src" / "models"
+MODELS_DIR = ROOT_DIR / "models"
 DOCS_DIR = ROOT_DIR / "docs"
 NOTEBOOKS_DIR = ROOT_DIR / "notebooks"
 MLRUNS_DIR = ROOT_DIR / "mlruns"
 
-# dataset e configs globais
 DATASET_NAME = "WA_Fn-UseC_-Telco-Customer-Churn.csv"
 TARGET_COLUMN = "Churn"
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 VALIDATION_SIZE = 0.2
 
-# hiperparametros do MLP
+# hiperparametros do modelo
 MLP_HIDDEN_DIMS = (128, 64, 32)
 MLP_DROPOUT_RATES = (0.3, 0.3, 0.2)
 MLP_LEARNING_RATE = 1e-3
@@ -28,7 +25,6 @@ MLP_MAX_EPOCHS = 100
 MLP_EARLY_STOPPING_PATIENCE = 10
 MLP_VAL_SIZE = 0.15
 
-# mlflow
 MLFLOW_EXPERIMENT_NAME = "tech-challenge-fase01"
 
 
@@ -55,14 +51,14 @@ def get_models_dir() -> Path:
 
 def get_mlruns_dir() -> Path:
     """
-    Retorna a pasta de tracking do MLflow
+    Retorna a pasta de tracking do MLflow (raiz do projeto)
     """
     return MLRUNS_DIR
 
 
 def get_mlflow_tracking_uri() -> str:
     """
-    Retorna o URI completo de tracking do MLflow
+    Retorna o URI de tracking do MLflow como file:// path absoluto.
     """
     MLRUNS_DIR.mkdir(parents=True, exist_ok=True)
     return MLRUNS_DIR.as_uri()
