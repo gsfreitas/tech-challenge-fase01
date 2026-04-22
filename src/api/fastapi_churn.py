@@ -103,12 +103,15 @@ try:
         dropout_rates=MLP_DROPOUT_RATES
     )
 
+    lr_model = joblib.load("models/logistic_regression.pkl")
+    tree_model = joblib.load("models/decision_tree.pkl")
+
     model.load_state_dict(torch.load("models/mlp.pt", map_location="cpu"))
     model.eval()
     
 
     MODELO_CARREGADO = True
-    print("[OK] Modelo e preprocessor carregados.")
+    print("[OK] Modelos e preprocessor carregados.")
 
 except Exception as e:
     import traceback
@@ -120,8 +123,26 @@ except Exception as e:
 # ENDPOINTS
 # =========================
 @app.get("/")
-def root():
-    return {"status": "API rodando 🚀"}
+def home():    
+    """
+    Rota principal que retorna informações sobre a API.
+    Util para verificar se API esta no ar e ver os endpoints disponiveis.
+
+    teste curl http://localhost:8000/
+
+    """
+    return {
+        "nome": "Churn Prediction API",
+        "versao": "1.0.0",
+        "descricao": "API para prever churn usando PyTorch + Pipeline",
+        "endpoints": {
+            "GET /": "GET - Informações sobre a API",
+            "GET /health": "GET - Verifica a saúde da API",
+            "GET /docs": "GET - Documentação interativa da API (Swagger UI)",
+            "POST /predict": "POST - Prever churn com base nos dados do cliente"
+
+        }
+    }
 
 # =========================
 # HEALTH CHECK
@@ -129,18 +150,33 @@ def root():
 @app.get("/health")
 def health():
     """Endpoint para verificar se o modelo está carregado e a API está saudável."""
+
     return {"status": "healthy" if MODELO_CARREGADO else "unhealthy"
             "moddelo_carregado"> MODELO_CARREGADO   
             }
 
 # =========================
-# PREDICT
+# PREDICT  MODELO MLP
 # =========================
-@app.post("/predict", response_model=ChurnPrediction)
+@app.post("/predict/mlp", response_model=ChurnPrediction)
 def predict(data: CustomerData):
 
+    """
+    Esse Endpoint recebe dados do cliente e preve churn usando mlp treinado. Ele faz o seguinte:
+    1. Verifica se o modelo está carregado. Se não estiver, retorna um erro 503.
+    2. Converte os dados de entrada em um DataFrame do pandas.
+    3. Aplica as transformações de feature engineering usando a classe FeatureEngineer.
+    4. Aplica o pré-processamento usando o pipeline carregado.
+    5. Converte os dados processados em um tensor do PyTorch.
+    6. Faz a previsão usando o modelo MLP e calcula a probabilidade de churn.
+    7. Retorna a previsão de churn (0 ou 1) e a probabilidade associada.
+    """
+
     if not MODELO_CARREGADO:
-        raise HTTPException(status_code=500, detail="Modelo não carregado")
+        raise HTTPException(
+            status_code=503,
+            detail="Modelo não carregado. Verifique se os arquivos .pkl existem."
+        )
 
     df = pd.DataFrame([data.dict()])
 
@@ -156,9 +192,74 @@ def predict(data: CustomerData):
         logits = model(X_tensor)
         proba = torch.sigmoid(logits).item()
 
-    prediction = 1 if proba > 0.5 else 0
+    return {
+        "churn_prediction": int(proba > 0.5),
+        "churn_probability": proba
+    }
+
+# =========================================
+# PREDICT  MODELO LOGISTIC REGRESSION - LR
+# =========================================
+
+@app.post("/predict/lr", response_model=ChurnPrediction)
+def predict_lr(data: CustomerData):
+
+    """
+    Esse Endpoint recebe dados do cliente e preve churn usando modelo de regressão logística treinado. Ele faz o seguinte:
+    1. Verifica se o modelo está carregado. Se não estiver, retorna um erro 503.
+    2. Converte os dados de entrada em um DataFrame do pandas.
+    3. Aplica as transformações de feature engineering usando a classe FeatureEngineer.
+    4. Aplica o pré-processamento usando o pipeline carregado.
+    5. Faz a previsão usando o modelo de regressão logística e calcula a probabilidade de churn.
+    6. Retorna a previsão de churn (0 ou 1) e a probabilidade associada.
+    """
+
+    if not MODELO_CARREGADO:
+        raise HTTPException(
+            status_code=503,
+            detail="Modelo não carregado. Verifique se os arquivos .pkl existem."
+        )
+
+    df = pd.DataFrame([data.dict()])
+    df = apply_feature_engineering(df) 
+    proba = lr_model.predict_proba(df)[0][1]
+    
+    pred = int(proba > 0.5)
 
     return {
-        "churn_prediction": prediction,
-        "churn_probability": proba
+        "churn_prediction": int(proba > 0.5),
+        "churn_probability": float(proba)
+    }
+
+
+# =========================================
+# PREDICT  MODELO DECISION TREE - TREE
+# =========================================
+@app.post("/predict/tree", response_model=ChurnPrediction)
+def predict_tree(data: CustomerData):
+
+    """
+    Esse Endpoint recebe dados do cliente e preve churn usando modelo de árvore de decisão treinado. Ele faz o seguinte:
+    1. Verifica se o modelo está carregado. Se não estiver, retorna um erro 503.
+    2. Converte os dados de entrada em um DataFrame do pandas.
+    3. Aplica as transformações de feature engineering usando a classe FeatureEngineer.
+    4. Aplica o pré-processamento usando o pipeline carregado.
+    5. Faz a previsão usando o modelo de árvore de decisão e calcula a probabilidade de churn.
+    6. Retorna a previsão de churn (0 ou 1) e a probabilidade associada.
+    """
+
+    if not MODELO_CARREGADO:
+        raise HTTPException(
+            status_code=503,
+            detail="Modelo não carregado. Verifique se os arquivos .pkl existem."
+        )
+
+    df = pd.DataFrame([data.dict()])
+    df = apply_feature_engineering(df)
+    proba = tree_model.predict_proba(df)[0][1]
+    pred = int(proba > 0.5)
+
+    return {
+        "churn_prediction": int(proba > 0.5),
+        "churn_probability": float(proba)
     }
