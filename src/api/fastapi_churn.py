@@ -4,6 +4,9 @@ from pydantic import BaseModel, Field
 import pandas as pd
 import torch
 import joblib
+import mlflow.sklearn
+import mlflow.pytorch
+
 
 
 from src.features.feature_engineering import FeatureEngineer
@@ -97,17 +100,18 @@ try:
 
     n_features = preprocessor.transform(dummy).shape[1]
 
-    model = ChurnMLP(
-        n_features=n_features,
-        hidden_dims=MLP_HIDDEN_DIMS,
-        dropout_rates=MLP_DROPOUT_RATES
-    )
+    lr_model = mlflow.sklearn.load_model(
+        "models:/logistic_regression/Production"
+        )
+    tree_model = mlflow.sklearn.load_model(
+        "models:/decision_tree/Production"
+        )
+    mlp_model = mlflow.pytorch.load_model(
+        "models:/mlp_pytorch/Production",
+        map_location="cpu"
+        )
 
-    lr_model = joblib.load("models/logistic_regression.pkl")
-    tree_model = joblib.load("models/decision_tree.pkl")
 
-    model.load_state_dict(torch.load("models/mlp.pt", map_location="cpu"))
-    model.eval()
     
 
     MODELO_CARREGADO = True
@@ -139,7 +143,9 @@ def home():
             "GET /": "GET - Informações sobre a API",
             "GET /health": "GET - Verifica a saúde da API",
             "GET /docs": "GET - Documentação interativa da API (Swagger UI)",
-            "POST /predict": "POST - Prever churn com base nos dados do cliente"
+            "POST /predict/mlp": "POST - Prever churn usando modelo MLP treinado",
+            "POST /predict/lr": "POST - Prever churn usando modelo de regressão logística treinado",
+            "POST /predict/tree": "POST - Prever churn usando modelo de árvore de decisão treinado"
 
         }
     }
@@ -151,8 +157,8 @@ def home():
 def health():
     """Endpoint para verificar se o modelo está carregado e a API está saudável."""
 
-    return {"status": "healthy" if MODELO_CARREGADO else "unhealthy"
-            "moddelo_carregado"> MODELO_CARREGADO   
+    return {"status": "healthy" if MODELO_CARREGADO else "unhealthy",
+            "modelo_carregado": MODELO_CARREGADO
             }
 
 # =========================
@@ -186,10 +192,10 @@ def predict(data: CustomerData):
     # preprocessing
     X_processed = preprocessor.transform(df)
 
-    X_tensor = torch.tensor(X_processed, dtype=torch.float32)
+    X_tensor = torch.tensor(X_processed, dtype=torch.float32).to("cpu")
 
     with torch.no_grad():
-        logits = model(X_tensor)
+        logits = mlp_model(X_tensor)
         proba = torch.sigmoid(logits).item()
 
     return {
