@@ -1,6 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import JSONResponse
+import time
+from collections import defaultdict, deque
+from datetime import datetime, timedelta
 from pydantic import BaseModel, Field
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+
+import jwt
+import os
 import pandas as pd
 import torch
 import joblib
@@ -8,10 +16,34 @@ import mlflow.sklearn
 import mlflow.pytorch
 
 
-
 from src.features.feature_engineering import FeatureEngineer
-from src.utils.config import MLP_HIDDEN_DIMS, MLP_DROPOUT_RATES
-from src.models.mlp import ChurnMLP
+
+SECRET_KEY = os.getenv("JWT_SECRET", "minha-chave-jwt-super-secreta")
+ALGORITHM = "HS256"
+TOKEN_EXPIRE_MINUTES = 30
+REQUESTS_LIMIT = 100
+WINDOW_SECONDS = 3600
+request_history = defaultdict(deque)
+
+USERS_DB = {
+    "admin": {
+        "role": "admin",
+        "password": "admin123"
+    },
+    "user": {
+        "role": "user",
+        "password": "user123"
+    }
+}
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int = TOKEN_EXPIRE_MINUTES * 60
 
 # =========================
 # SCHEMA DE ENTRADA
@@ -47,10 +79,48 @@ class ChurnPrediction(BaseModel):
 # =========================
 # APP
 # =========================
+def create_token(username: str, role: str) -> str:
+    """
+    Cria um token JWT com expiração
+
+    """
+    expire = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "sub": username,
+        "role": role,
+        "exp": expire
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+security = HTTPBearer()
+
+def get_current_user(
+        credentials: HTTPAuthorizationCredentials = Depends(security)
+        ) -> dict:
+    """
+    Decodifica o token JWT e retorna as informações do usuário.
+    """
+    try:
+        payload = jwt.decode(credentials.credentials,
+                            SECRET_KEY,
+                            algorithms=[ALGORITHM]
+                            )
+        return {"username": payload["sub"], "role": payload["role"]}
+    
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expirado. Faça login novamente.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    
+
 app = FastAPI(
-    title="Churn Prediction API",
-    description="API para prever churn usando PyTorch + Pipeline",
-    version="1.0.0"
+    title="Churn Prediction API com Autenticação",
+    description="API para prever churn usando PyTorch + Pipeline protejida por autenticação JWT",
+    version="2.0.0",
+    openapi_tags=[
+        {"name": "auth", "description": "Endpoints de autenticação"},
+        {"name": "prediction", "description": "Endpoints de previsão de churn"}
+    ]
 )
 
 # =========================
@@ -127,7 +197,8 @@ except Exception as e:
 # ENDPOINTS
 # =========================
 @app.get("/")
-def home():    
+def home():   
+    
     """
     Rota principal que retorna informações sobre a API.
     Util para verificar se API esta no ar e ver os endpoints disponiveis.
@@ -136,16 +207,19 @@ def home():
 
     """
     return {
-        "nome": "Churn Prediction API",
-        "versao": "1.0.0",
-        "descricao": "API para prever churn usando PyTorch + Pipeline",
+        "nome": "Churn Prediction API com Autenticação e Rate Limiting",
+        "limite": f"{REQUESTS_LIMIT} requisições por {WINDOW_SECONDS}-s por IP",
+        "versao": "2.0.0",
+        "descricao": "API para prever churn usando PyTorch + Pipeline protejida por autenticação JWT",
         "endpoints": {
-            "GET /": "GET - Informações sobre a API",
-            "GET /health": "GET - Verifica a saúde da API",
+            "GET /": "Publico - Informações sobre a API",
             "GET /docs": "GET - Documentação interativa da API (Swagger UI)",
-            "POST /predict/mlp": "POST - Prever churn usando modelo MLP treinado",
-            "POST /predict/lr": "POST - Prever churn usando modelo de regressão logística treinado",
-            "POST /predict/tree": "POST - Prever churn usando modelo de árvore de decisão treinado"
+            "GET /health": "GET - Verifica a saúde da API",
+            "POST /login": "POST - Autenticação de usuário e geração de token JWT",
+            "GET /me (protegido)": "GET - Endpoint protegido que retorna informações do usuário autenticado",
+            "POST /predict/mlp (protegido)": "POST - Prever churn usando modelo MLP treinado",
+            "POST /predict/lr (protegido)": "POST - Prever churn usando modelo de regressão logística treinado",
+            "POST /predict/tree (protegido)": "POST - Prever churn usando modelo de árvore de decisão treinado"
 
         }
     }
@@ -162,12 +236,87 @@ def health():
             }
 
 # =========================
-# PREDICT  MODELO MLP
+# MIDLEWARE DE AUTENTICAÇÃO
 # =========================
-@app.post("/predict/mlp", response_model=ChurnPrediction)
-def predict(data: CustomerData):
+
+@app.middleware("http")
+async def rate_limiter(request: Request, call_next):
+    """
+    Middleware para limitar o número de requisições por IP.
+    Permite no máximo 100 requisições por hora por IP.
+    """
+    client_ip = request.client.host
+    now = time.time()
+    history = request_history[client_ip]
+
+    # Remove requisições antigas (fora da janela)
+    while history and now - history[0] > WINDOW_SECONDS:
+        history.popleft()
+
+    # Verifica se passou do limite
+    if len(history) >= REQUESTS_LIMIT:
+        return JSONResponse(status_code=429,
+                            content={
+                                "detail": f"Limite excedido: {REQUESTS_LIMIT} requisições por {WINDOW_SECONDS}-s",
+                                "retry_after": int(WINDOW_SECONDS - (now - history[0]))
+                                }
+                            )
+
+    # Reguitra a requisição atual
+    history.append(now)
+
+    # Continua com a requisição
+    response = await call_next(request)
+
+    # Adiciona header informando o número de requisições restantes
+    response.headers["X-RateLimit-Remaining"] = str(REQUESTS_LIMIT - len(history))
+    response.headers["X-RateLimit-Reset"] = str(REQUESTS_LIMIT)
+
+    return response
+
+# =========================
+# LOGIN E AUTENTICAÇÃO
+# =========================
+
+@app.post("/login", response_model=TokenResponse, tags=["auth"])
+def login(credentials: LoginRequest):
+    """
+    Endpoint de login que autentica o usuário e retorna um token JWT.
+    """
+
+    user = USERS_DB.get(credentials.username)
+
+    if not user or user["password"] != credentials.password:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+
+    token = create_token(credentials.username, user["role"])
+
+    return TokenResponse(access_token=token)
+
+# =========================
+# INFO USUÁRIO AUTENTICADO
+# =========================
+
+@app.get("/me", tags=["auth"])
+def get_me(current_user: dict = Depends(get_current_user)):
+    """
+    Retorna informações do usuário logado. Endpoint protegido que requer um token JWT válido.
 
     """
+    return {
+        "username": current_user["role"],
+        "message": "Você está autenticado!"
+    }
+
+# =========================
+# PREDICT  MODELO MLP
+# =========================
+@app.post("/predict/mlp", response_model=ChurnPrediction, tags=["Predict"])
+def predict(payload: CustomerData, current_user: dict = Depends(get_current_user)):
+
+    """
+    Endpoint protegido por token JWT.
+
     Esse Endpoint recebe dados do cliente e preve churn usando mlp treinado. Ele faz o seguinte:
     1. Verifica se o modelo está carregado. Se não estiver, retorna um erro 503.
     2. Converte os dados de entrada em um DataFrame do pandas.
@@ -184,7 +333,7 @@ def predict(data: CustomerData):
             detail="Modelo não carregado. Verifique se os arquivos .pkl existem."
         )
 
-    df = pd.DataFrame([data.dict()])
+    df = pd.DataFrame([payload.dict()])
 
     # Feature Engineering
     df = apply_feature_engineering(df)
@@ -200,7 +349,8 @@ def predict(data: CustomerData):
 
     return {
         "churn_prediction": int(proba > 0.5),
-        "churn_probability": proba
+        "churn_probability": proba,
+        "usuario": current_user["username"]
     }
 
 # =========================================
