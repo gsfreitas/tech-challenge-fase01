@@ -8,7 +8,7 @@ router = APIRouter()
 model_service = ModelService()
 
 @router.post("/mlp", response_model=ChurnPrediction)
-def predict(
+def predict_mlp(
     data: CustomerData,
     current_user=Depends(require_role(["admin"]))
 ):

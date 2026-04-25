@@ -59,9 +59,9 @@ def get_current_user(
     
 from fastapi import Depends, HTTPException
 
-def require_role(required_role: str):
+def require_role(required_role: list[str]):
     def role_checker(current_user: dict = Depends(get_current_user)):
-        if current_user["role"] != required_role:
+        if current_user["role"] not in required_role:
             raise HTTPException(
                 status_code=403,
                 detail="Acesso negado: permissão insuficiente"
