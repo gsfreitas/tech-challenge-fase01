@@ -195,13 +195,33 @@ pytest tests/ -v
 
 ## 📊 Resultados
 
-> _Seção a ser preenchida após a conclusão dos experimentos._
+### Comparativo de modelos (holdout test set)
 
-| Modelo | Acurácia | F1-Score | AUC-ROC |
-|--------|----------|----------|---------|
-| Baseline (LR) | — | — | — |
-| Random Forest | — | — | — |
-| XGBoost | — | — | — |
+| Modelo | ROC-AUC | PR-AUC | F1 | Recall | Precision | Accuracy |
+|---|---|---|---|---|---|---|
+| Dummy (baseline) | 0.5000 | 0.2654 | 0.0000 | 0.0000 | 0.0000 | 0.7346 |
+| Logistic Regression | 0.8431 | 0.6385 | 0.6157 | 0.7861 | 0.5060 | 0.7395 |
+| Decision Tree | 0.7939 | 0.5659 | 0.5962 | 0.7914 | 0.4782 | 0.7154 |
+| **MLP (PyTorch)** | **0.8470** | 0.6318 | 0.6197 | 0.7857 | 0.5116 | 0.7446 |
+
+### Análise de custo FP vs FN
+
+Assumindo custos assimétricos de negócio — **R$ 1.500 por Falso Negativo** (receita perdida ao deixar um churner passar) vs **R$ 50 por Falso Positivo** (custo de uma abordagem proativa desnecessária) — a análise de threshold mostra que o threshold padrão (0.5) é sub-ótimo:
+
+| Configuração | Threshold | FP | FN | Recall | Custo total |
+|---|---|---|---|---|---|
+| Padrão | 0.50 | 210 | 60 | 78.6% | R$ 100.500 |
+| **Ótimo** | **0.11** | 531 | 0 | 100.0% | R$ 26.550 |
+
+**Redução de custo ao usar threshold ótimo: 73,6%.**
+
+### Key insights
+
+- **MLP e LogReg empatam tecnicamente.** Para dados tabulares de ~7k linhas, a complexidade da rede neural não traz ganho proporcional sobre um baseline linear bem configurado. Esse é um padrão conhecido na literatura — MLPs brilham mais em dados não-tabulares (imagem, texto, áudio) ou quando há volume muito maior de exemplos.
+- **O modelo a ser servido é o MLP**, por ser o modelo central do desafio, com threshold operacional de 0.11 (não o padrão 0.5).
+- **Recall é a métrica crítica** para este caso de uso. O custo de perder um churner é 30x maior que o custo de abordar um cliente estável.
+
+Artefatos detalhados em `docs/model_comparison.csv`, `docs/cost_analysis.csv` e gráficos em `docs/*.png`. Notebook consolidado em `notebooks/reports/04_model_comparison.ipynb`.
 
 ---
 
@@ -222,8 +242,13 @@ Distribuído sob a licença MIT. Consulte `LICENSE` para mais informações.
 
 ---
 
-## 👤 Autor
+## 👤 Authors
 
-**Gabriel**  
-Senior DevOps Engineer @ Telefônica Brasil  
-Pós-graduando em Machine Learning Engineering
+**Gabriel**
+Senior DevOps Engineer @ Telefônica Brasil
+
+**Diego**
+Full Stack Developer @ Eldorado Research Institute
+
+**Deyvid**
+Fullstack Developer @ Minsait
