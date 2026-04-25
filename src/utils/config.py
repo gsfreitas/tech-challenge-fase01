@@ -26,6 +26,7 @@ MLP_EARLY_STOPPING_PATIENCE = 10
 MLP_VAL_SIZE = 0.15
 
 MLFLOW_EXPERIMENT_NAME = "tech-challenge-fase01"
+OPERATIONAL_THRESHOLD = 0.11
 
 
 def get_dataset_path() -> Path:

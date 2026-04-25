@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from api.core.auth import get_current_user, require_role
 from api.models.schemas import CustomerData, ChurnPrediction
 from api.services.model_service import ModelService
+from src.utils.config import OPERATIONAL_THRESHOLD
 import pandas as pd
 
 router = APIRouter()
@@ -17,7 +18,7 @@ def predict_mlp(
         proba = model_service.predict_mlp(df)
 
         return {
-            "churn_prediction": int(proba > 0.5),
+            "churn_prediction": int(proba > OPERATIONAL_THRESHOLD),
             "churn_probability": proba
         }
 
@@ -34,7 +35,7 @@ def predict_lr(
         proba = model_service.predict_lr(df)
 
         return {
-            "churn_prediction": int(proba > 0.5),
+            "churn_prediction": int(proba > OPERATIONAL_THRESHOLD),
             "churn_probability": proba
         }
 
