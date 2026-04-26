@@ -222,7 +222,7 @@ def train_single_model(
     all_metrics = {**cv_metrics, **holdout_metrics}
 
     # MLflow tracking
-    with mlflow.start_run(run_name=model_name):
+    with mlflow.start_run(run_name=model_name) as run:
         mlflow.log_param("model_type", model_name)
         mlflow.log_param("random_state", RANDOM_STATE)
         mlflow.log_param("test_size", TEST_SIZE)
@@ -247,6 +247,28 @@ def train_single_model(
         model_path = models_dir / f"{model_name}.pkl"
         joblib.dump(pipeline, model_path)
         mlflow.log_artifact(str(model_path))
+
+        # Registra no Model Registry como Production
+        # Necessário pra API carregar via `models:/<n>/Production`.
+        # Pula o dummy (não faz sentido servir baseline trivial).
+        if model_name != "dummy":
+            try:
+                model_uri = f"runs:/{run.info.run_id}/model"
+                registered = mlflow.register_model(model_uri, name=model_name)
+
+                client = mlflow.MlflowClient()
+                client.transition_model_version_stage(
+                    name=model_name,
+                    version=registered.version,
+                    stage="Production",
+                    archive_existing_versions=True,
+                )
+                logger.info(
+                    "Modelo '%s' registrado no Registry como v%s [Production]",
+                    model_name, registered.version,
+                )
+            except Exception as e:
+                logger.warning("Falha ao registrar %s no Registry: %s", model_name, e)
 
         logger.info(
             "%s -> ROC-AUC=%.4f | PR-AUC=%.4f | F1=%.4f | Recall=%.4f",

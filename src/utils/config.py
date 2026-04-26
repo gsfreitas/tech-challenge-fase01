@@ -59,7 +59,14 @@ def get_mlruns_dir() -> Path:
 
 def get_mlflow_tracking_uri() -> str:
     """
-    Retorna o URI de tracking do MLflow como file:// path absoluto.
+    Retorna o URI de tracking do MLflow apontando para SQLite local.
+
+    Por que SQLite e não file backend:
+    - SQLite suporta Model Registry com stages (Production/Staging/Archived).
+    - Mesmo backend do MLflow UI usado no projeto.
+    - Permite que a API carregue modelos via `models:/<name>/Production`.
+
+    Em produção real, este URI seria substituído por um servidor MLflow
+    centralizado (ex: PostgreSQL + S3 para artifacts).
     """
-    MLRUNS_DIR.mkdir(parents=True, exist_ok=True)
-    return MLRUNS_DIR.as_uri()
+    return f"sqlite:///{ROOT_DIR / 'mlflow.db'}"

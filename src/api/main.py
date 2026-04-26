@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from api.middleware.latency import latency_middleware
 from api.middleware.rate_limit import rate_limiter
 from api.routes import auth_routes, predict_routes, system_routes
-from scr.utils.logging_config import setup_logging
+from src.utils.logging_config import setup_logging
 
 app = FastAPI(
     title="Churn Prediction API",

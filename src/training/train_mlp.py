@@ -337,6 +337,26 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict: # pragm
         # MLflow pytorch log
         mlflow.pytorch.log_model(model, name="model")
 
+        # Registra no Model Registry como Production
+        # Necessário pra API carregar via `models:/mlp_pytorch/Production`.
+        try:
+            model_uri = f"runs:/{run.info.run_id}/model"
+            registered = mlflow.register_model(model_uri, name="mlp_pytorch")
+
+            client = mlflow.MlflowClient()
+            client.transition_model_version_stage(
+                name="mlp_pytorch",
+                version=registered.version,
+                stage="Production",
+                archive_existing_versions=True,
+            )
+            logger.info(
+                "Modelo 'mlp_pytorch' registrado no Registry como v%s [Production]",
+                registered.version,
+            )
+        except Exception as e:
+            logger.warning("Falha ao registrar mlp_pytorch no Registry: %s", e)
+
         logger.info("Artefatos salvos em %s", models_dir)
 
     return test_metrics

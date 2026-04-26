@@ -29,7 +29,10 @@ build/
 # =========================
 # MLflow
 # =========================
+# mlruns/ é o backend antigo (file-based) — agora usamos sqlite mlflow.db
+# que DEVE ser versionado pra o Registry funcionar pra todo mundo
 mlruns/
+**/mlruns/
 
 # =========================
 # Dados (não versionar)
@@ -44,11 +47,19 @@ data/processed/*
 # =========================
 # Modelos treinados
 # =========================
+# Modelos vão via GitHub Releases (scripts/download_model.ps1)
 models/*.pkl
 models/*.pt
 models/*.joblib
-**/mlruns/
-models/*.pkl
+
+# =========================
+# Tests / Coverage
+# =========================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.ruff_cache/
 
 # =========================
 # Logs / temporários
@@ -65,4 +76,5 @@ Thumbs.db
 # =========================
 # VS Code
 # =========================
+.vscode/
 .vscode/.coverage

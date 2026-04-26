@@ -1,17 +1,25 @@
-import joblib
-import mlflow.sklearn
-import mlflow.pytorch
-import pandas as pd
-import torch
 import os
 
+import joblib
+import mlflow
+import mlflow.pytorch
+import mlflow.sklearn
+import pandas as pd
+import torch
+
 from api.services.feature_engineering import apply_feature_engineering
+from src.utils.config import get_mlflow_tracking_uri
 
 
 class ModelService:
 
     def __init__(self):
         try:
+            # Configura tracking URI ANTES de tentar carregar modelos do Registry.
+            # Sem isso, MLflow tentaria usar o default (arquivo local em ./mlruns)
+            # e falharia com "Registered Model not found".
+            mlflow.set_tracking_uri(get_mlflow_tracking_uri())
+
             base_path = os.getenv("MODEL_PATH", "models")
 
             self.preprocessor = joblib.load(f"{base_path}/mlp_preprocessor.pkl")
