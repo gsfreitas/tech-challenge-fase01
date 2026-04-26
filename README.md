@@ -252,3 +252,6 @@ Full Stack Developer @ Eldorado Research Institute
 
 **Deyvid**
 Fullstack Developer @ Minsait
+
+**Lucas Molitor**
+Fullstack Developer @ CI&T
