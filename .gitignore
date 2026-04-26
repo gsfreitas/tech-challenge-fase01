@@ -34,8 +34,12 @@ mlruns/
 # =========================
 # Dados (não versionar)
 # =========================
-data/raw/
-data/processed/
+data/raw/*
+data/processed/*
+
+# EXCEÇÃO: permitir gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 
 # =========================
 # Modelos treinados
@@ -61,4 +65,4 @@ Thumbs.db
 # =========================
 # VS Code
 # =========================
-.vscode/
+.vscode/.coverage
