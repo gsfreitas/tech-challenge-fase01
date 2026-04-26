@@ -99,6 +99,11 @@ def compute_pos_weight(y_train: np.ndarray) -> torch.Tensor:
     """
     n_pos = np.sum(y_train == 1)
     n_neg = np.sum(y_train == 0)
+    if n_pos == 0:
+        raise ValueError(
+            "Não é possível calcular pos_weight sem amostras positivas "
+            f"(n_pos=0, n_neg={n_neg})."
+        )
     pos_weight = float(n_neg) / float(n_pos)
     logger.info(
         "pos_weight=%.4f (n_neg=%d, n_pos=%d)", pos_weight, n_neg, n_pos
