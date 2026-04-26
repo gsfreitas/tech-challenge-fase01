@@ -41,3 +41,21 @@ def predict_lr(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/tree", response_model=ChurnPrediction)
+def predict_tree(
+    data: CustomerData,
+    current_user=Depends(get_current_user)
+):
+    try:
+        df = pd.DataFrame([data.model_dump()])
+        proba = model_service.predict_tree(df)
+
+        return {
+            "churn_prediction": int(proba > OPERATIONAL_THRESHOLD),
+            "churn_probability": proba
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

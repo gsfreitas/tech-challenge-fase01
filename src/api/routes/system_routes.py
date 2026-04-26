@@ -1,20 +1,17 @@
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+
+from api.services.model_service import ModelService
 
 router = APIRouter()
+_model_service = ModelService()
+
 
 @router.get("/")
 def root():
-
-    """
-    Rota principal que retorna informações sobre a API.
-    Util para verificar se API esta no ar e ver os endpoints disponiveis.
-
-    Teste curl http://localhost:8000/
-
-    """
     return {
         "name": "Churn Prediction API",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "description": "API para previsão de churn com autenticação JWT",
         "how_to_use": {
             "1_login": "POST /auth/login → obter token JWT",
@@ -25,18 +22,29 @@ def root():
             "docs": "/docs",
             "health": "/health",
             "login": "/auth/login",
-            "predict_mlp": "/predict/mlp"
+            "predict_mlp": "/predict/mlp",
+            "predict_lr": "/predict/lr",
+            "predict_tree": "/predict/tree",
         }
     }
 
+
 @router.get("/health")
 def health():
-
-    """
-    Endpoint para verificar se o modelo está carregado e a API está saudável."""
+    if not _model_service.loaded:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "service": "churn-api",
+                "version": "2.1.0",
+                "reason": "models not loaded",
+            },
+        )
 
     return {
         "status": "ok",
         "service": "churn-api",
-        "version": "2.0.0"
+        "version": "2.1.0",
+        "models_loaded": True,
     }

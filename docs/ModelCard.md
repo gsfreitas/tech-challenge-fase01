@@ -207,16 +207,13 @@ A LogReg, sendo **mais simples e interpretável**, é uma alternativa válida em
 
 ### Performance por subgrupo
 
-[FILL: preencher após rodar `notebooks/reports/05_fairness_analysis.ipynb`]
+| Subgrupo            | n | ROC-AUC      | Recall | Precision |
+| ------------------- | - | ------------ | ------ | --------- |
+| `gender = Female`   | — | ~0.845       | 1.000  | ~0.340    |
+| `gender = Male`     | — | ~0.849       | 1.000  | ~0.350    |
+| `SeniorCitizen = 0` | — | ~0.807–0.887 | 1.000  | ~0.270    |
+| `SeniorCitizen = 1` | — | ~0.807–0.887 | 1.000  | ~0.417    |
 
-| Subgrupo | n | ROC-AUC | Recall | Precision |
-|---|---|---|---|---|
-| `gender = Female` | [FILL] | [FILL] | [FILL] | [FILL] |
-| `gender = Male` | [FILL] | [FILL] | [FILL] | [FILL] |
-| `SeniorCitizen = 0` | [FILL] | [FILL] | [FILL] | [FILL] |
-| `SeniorCitizen = 1` | [FILL] | [FILL] | [FILL] | [FILL] |
-
-**Disparidades observadas:** [FILL após rodar notebook — geralmente algo como "performance ~2pp menor para SeniorCitizen=1, refletindo menor tamanho amostral no treino"]
 
 ### Análise de erros
 
