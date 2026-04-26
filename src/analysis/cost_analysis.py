@@ -151,7 +151,7 @@ def format_summary(df: pd.DataFrame, cost_fn: float, cost_fp: float) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
+def main() -> None: # pragma: no cover
     parser = argparse.ArgumentParser(description="Análise de custo FP vs FN.")
     parser.add_argument("--cost-fn", type=float, default=DEFAULT_COST_FN,
                         help="Custo de 1 Falso Negativo em R$")

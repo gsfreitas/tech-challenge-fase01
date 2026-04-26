@@ -202,7 +202,7 @@ def compute_metrics(y_true: np.ndarray, y_proba: np.ndarray, threshold: float = 
 # Pipeline principal
 # ──────────────────
 
-def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
+def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict: # pragma: no cover
     """
     Orquestra o treino do MLP
     """
@@ -342,7 +342,7 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict:
     return test_metrics
 
 
-def main() -> None:
+def main() -> None: # pragma: no cover
     parser = argparse.ArgumentParser(description="Treina MLP PyTorch para churn.")
     parser.add_argument(
         "--experiment", type=str, default=MLFLOW_EXPERIMENT_NAME,
