@@ -1,13 +1,51 @@
 # 📉 Customer Churn Prediction — Tech Challenge Fase 01
 
-> Projeto de Machine Learning para predição de churn em operadora de telecomunicações.  
-> Desenvolvido como parte do programa de pós-graduação em Machine Learning Engineering.
+> Pipeline end-to-end de predição de churn em telecomunicações: do EDA ao deploy.
+> Desenvolvido como parte do programa **Machine Learning Engineering** — PosTech FIAP.
+
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg)](https://pytorch.org/)
+[![MLflow](https://img.shields.io/badge/MLflow-3.x-0194E2.svg)](https://mlflow.org/)
+[![Tests](https://img.shields.io/badge/tests-151%20passing-success.svg)](#-testes)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ---
 
 ## 🎯 Objetivo
 
-Construir um pipeline end-to-end de predição de churn (cancelamento de clientes) utilizando dados públicos de telecomunicações, cobrindo desde a análise exploratória até a exposição do modelo via API de inferência.
+Construir um **pipeline completo de predição de churn** para uma operadora de telecomunicações, cobrindo:
+
+- 📊 Análise exploratória e engenharia de features
+- 🤖 Treinamento de modelos baseline (LogReg, Decision Tree) e MLP em PyTorch
+- 📈 Análise de custo e calibração de threshold operacional
+- 🔌 API de inferência com FastAPI, JWT e roles
+- 🧪 Suíte de testes automatizada (151 testes)
+- 📚 Documentação completa (Model Card, Monitoring Plan, Deployment Architecture)
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/gsfreitas/tech-challenge-fase01.git
+cd tech-challenge-fase01
+
+# 2. Instale dependências
+make install   # ou: uv sync --all-extras
+
+# 3. Configure variáveis de ambiente
+cp .env.example .env
+
+# 4. Treine os modelos (gera mlflow.db com Registry populado)
+make train     # ~1-2 minutos
+
+# 5. Suba a API
+make api       # http://localhost:8000/docs
+```
+
+Pra Windows sem Make: `$env:PYTHONPATH = "src;."; uv run uvicorn src.api.main:app --reload`
 
 ---
 
@@ -15,181 +53,52 @@ Construir um pipeline end-to-end de predição de churn (cancelamento de cliente
 
 ```
 tech-challenge-fase01/
+├── data/                          # Dados (não versionados)
+│   ├── raw/                       # CSV original do IBM Telco
+│   └── processed/                 # Dados após preprocessing
 │
-├── data/ # Dados do projeto (não versionados)
-│ ├── raw/ # Dados brutos originais (ex: CSV original)
-│ └── processed/ # Dados tratados e prontos para modelagem
+├── notebooks/
+│   ├── exploratory/               # Análises iniciais (EDA)
+│   │   ├── 01_eda.ipynb
+│   │   ├── 02_feature_analysis.ipynb
+│   │   └── 03_baseline_model.ipynb
+│   └── reports/                   # Notebooks finais (entregáveis)
+│       ├── 04_compara_modelos.ipynb
+│       └── 05_fairness_analysis.ipynb
 │
-├── notebooks/ # Notebooks para exploração e análise
-│ ├── exploratory/ # Análises exploratórias (EDA)
-│ │ └── 01_eda.ipynb # Análise inicial dos dados
-│ └── reports/ # Notebooks para apresentação
+├── src/
+│   ├── api/                       # API FastAPI
+│   │   ├── core/                  # Auth (JWT), config
+│   │   ├── middleware/            # Rate limit, latency
+│   │   ├── models/                # Schemas Pydantic
+│   │   ├── routes/                # auth, predict, system
+│   │   ├── services/              # ModelService, feature engineering
+│   │   └── main.py
+│   │
+│   ├── analysis/                  # Análise de custo FP/FN
+│   ├── data/                      # Loaders e cleaners
+│   ├── features/                  # Feature engineering + preprocessing
+│   ├── models/                    # MLP PyTorch + early stopping
+│   ├── training/                  # Scripts de treino e comparação
+│   └── utils/                     # Config, reproducibility, logging
 │
-├── src/ # Código-fonte principal (produção)
-│ ├── api/ # API de inferência (FastAPI)
-│ │ └── init.py
-│ │
-│ ├── data/ # Scripts de ingestão e preparação de dados
-│ │ └── init.py
-│ │
-│ ├── features/ # Engenharia de features
-│ │ └── init.py
-│ │
-│ ├── models/ # Definição e registro de modelos
-│ │ ├── init.py
-│ │ └── register.py # Funções para salvar/carregar modelos
-│ │
-│ ├── training/ # Scripts de treinamento
-│ │ ├── init.py
-│ │ └── train.py # Pipeline de treino (baseline + MLP)
-│ │
-│ └── utils/ # Funções utilitárias gerais
-│ ├── init.py
-│ ├── config.py # Paths e configurações globais
-│ ├── reproducibility.py # Controle de seeds
-│ └── logging_config.py # Configuração de logging
+├── tests/
+│   ├── unit/                      # 121 testes unitários
+│   └── api/                       # 30 testes de API
 │
-├── tests/ # Testes automatizados
-│ └── test_basic.py # Testes iniciais (smoke test / validações básicas)
+├── docs/
+│   ├── model_card.md              # Model Card (Mitchell et al. 2019)
+│   ├── monitoring_plan.md         # Plano de monitoramento
+│   ├── deployment_architecture.md # Arquitetura de deploy
+│   ├── ml_canvas.md               # ML Canvas
+│   └── (gráficos PNG, CSVs)
 │
-├── docs/ # Documentação do projeto
-│ # (ML Canvas, Model Card, arquitetura, etc.)
-│
-├── models/ # Modelos treinados (não versionados)
-│ # (ex: .pkl, .pt)
-│
-├── mlruns/ # Experimentos do MLflow (não versionado)
-│
-├── LICENSE
-└── README.md
+├── models/                        # Artefatos treinados (não versionados)
+├── mlflow.db                      # SQLite com Model Registry (versionado)
+├── Makefile                       # Atalhos comuns
+├── pyproject.toml                 # Dependências e configurações
+└── .env.example                   # Template de variáveis de ambiente
 ```
-
----
-
-## 🔄 Fluxo do Projeto
-
-O projeto segue uma abordagem modular, separando responsabilidades entre exploração, processamento e modelagem:
-
-1. **Ingestão de dados**
-   - Leitura do dataset bruto em `data/raw/`
-   - Centralizada em `src/data/data_loader.py`
-
-2. **Limpeza e preparação**
-   - Tratamento inicial de dados
-   - Implementado em `src/data/data_cleaner.py`
-
-3. **Exploração (EDA)**
-   - Análises exploratórias nos notebooks
-   - `notebooks/exploratory/`
-
-4. **Configuração e reprodutibilidade**
-   - Paths e constantes centralizados em `src/utils/config.py`
-   - Seed global definida em `src/utils/reproducibility.py`
-
-5. **Modelagem (em evolução)**
-   - Baselines e MLP serão implementados nas próximas etapas
-
-6. **API de inferência (futuro)**
-   - Será implementada com FastAPI em `src/api/`
-
----
-
-### Configuração de ambiente e reprodutibilidade
-
-O projeto utiliza uma configuração centralizada para garantir consistência entre ambientes:
-
-- Paths definidos em `src/utils/config.py`
-- Seed global definida em `src/utils/reproducibility.py`
-
-Isso garante que experimentos sejam reproduzíveis.
-
----
-
-## 📦 Datasets
-
-Os dados **não estão incluídos** no repositório. Faça o download manualmente:
-
-| Dataset | Fonte | Link |
-|--------|-------|------|
-| IBM Telco Customer Churn | Kaggle | [Download](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) |
-| Iranian Churn Dataset | UCI ML Repository | [Download](https://archive.ics.uci.edu/dataset/563/iranian+churn+dataset) |
-
-Após o download, coloque os arquivos em `data/raw/`.
-
----
-
-## 🚀 Como Executar
-
-### Pré-requisitos
-
-- Python 3.10+
-- [Poetry](https://python-poetry.org/) para gerenciamento de dependências
-- [UV](https://docs.astral.sh/uv/) para gerenciamento de dependências. 
-- Artigo sobre UV: [UV Python Gerenciador de Pacotes Comparativo C#.](https://zocate.li/posts/2026/uv-python-gerenciador-pacotes-comparativo-csharp/)
-- Docker (opcional, para containerização da API)
-
-### Instalação
-
-```bash
-# Clone o repositório
-git clone https://github.com/<seu-usuario>/tech-challenge-fase01.git
-cd tech-challenge-fase01
-
-# Instale as dependências
-poetry install
-
-# Ative o ambiente virtual
-poetry shell
-```
-
-### Executando os Notebooks
-
-```bash
-jupyter notebook notebooks/
-```
-
-### Rastreamento de Experimentos (MLflow)
-
-Os experimentos de modelagem são rastreados utilizando MLflow, permitindo:
-
-- registro de métricas
-- comparação entre modelos
-- versionamento de experimentos
-
-```bash
-mlflow ui
-# Acesse: http://localhost:5000
-```
-
-### API de Inferência
-
-```bash
-uvicorn src.api.main:app --reload
-# Docs: http://localhost:8000/docs
-```
-
----
-
-## 🧪 Testes
-
-```bash
-pytest tests/ -v
-```
-
----
-
-## 🛠️ Stack
-
-| Ferramenta | Uso |
-|-----------|-----|
-| `scikit-learn` | Modelagem e pré-processamento |
-| `pandas` / `numpy` | Manipulação de dados |
-| `matplotlib` / `seaborn` | Visualização |
-| `mlflow` | Rastreamento de experimentos |
-| `FastAPI` | API de inferência |
-| `pytest` | Testes automatizados |
-| `Docker` | Containerização |
-| `Poetry` | Gerenciamento de dependências |
 
 ---
 
@@ -206,52 +115,261 @@ pytest tests/ -v
 
 ### Análise de custo FP vs FN
 
-Assumindo custos assimétricos de negócio — **R$ 1.500 por Falso Negativo** (receita perdida ao deixar um churner passar) vs **R$ 50 por Falso Positivo** (custo de uma abordagem proativa desnecessária) — a análise de threshold mostra que o threshold padrão (0.5) é sub-ótimo:
+Assumindo custos assimétricos de negócio — **R\$ 1.500 por Falso Negativo** (receita perdida) vs **R\$ 50 por Falso Positivo** (custo de abordagem desnecessária) — a análise de threshold revelou que o padrão (0.5) é sub-ótimo:
 
 | Configuração | Threshold | FP | FN | Recall | Custo total |
 |---|---|---|---|---|---|
-| Padrão | 0.50 | 210 | 60 | 78.6% | R$ 100.500 |
-| **Ótimo** | **0.11** | 531 | 0 | 100.0% | R$ 26.550 |
+| Padrão | 0.50 | 210 | 60 | 78.6% | R\$ 100.500 |
+| **Operacional** | **0.11** | 531 | 0 | 100.0% | R\$ 26.550 |
 
-**Redução de custo ao usar threshold ótimo: 73,6%.**
+**Redução de custo: 73,6%** ao usar o threshold operacional.
 
 ### Key insights
 
-- **MLP e LogReg empatam tecnicamente.** Para dados tabulares de ~7k linhas, a complexidade da rede neural não traz ganho proporcional sobre um baseline linear bem configurado. Esse é um padrão conhecido na literatura — MLPs brilham mais em dados não-tabulares (imagem, texto, áudio) ou quando há volume muito maior de exemplos.
-- **O modelo a ser servido é o MLP**, por ser o modelo central do desafio, com threshold operacional de 0.11 (não o padrão 0.5).
-- **Recall é a métrica crítica** para este caso de uso. O custo de perder um churner é 30x maior que o custo de abordar um cliente estável.
+- **MLP e LogReg empatam tecnicamente.** Para dados tabulares de ~7k linhas, a complexidade adicional da rede não traz ganho proporcional.
+- **Recall é a métrica crítica** — perder um churner custa 30× mais que abordar um cliente estável.
+- **MLP escolhido como modelo principal** pelo escopo acadêmico (demonstrar arquitetura PyTorch end-to-end), com threshold operacional `0.11` configurado em `src/utils/config.py`.
 
-Artefatos detalhados em `docs/model_comparison.csv`, `docs/cost_analysis.csv` e gráficos em `docs/*.png`. Notebook consolidado em `notebooks/reports/04_model_comparison.ipynb`.
+Artefatos completos em `docs/model_comparison.csv`, `docs/cost_analysis.csv` e gráficos em `docs/*.png`. Notebooks consolidados em `notebooks/reports/`.
+
+---
+
+## 🔌 API de Inferência
+
+API FastAPI com **autenticação JWT**, **rate limiting**, **logging estruturado JSON** e **middleware de latência**.
+
+### Endpoints
+
+| Endpoint | Método | Auth | Role | Descrição |
+|---|---|---|---|---|
+| `/` | GET | Não | — | Metadata da API |
+| `/health` | GET | Não | — | Health check (verifica modelos carregados) |
+| `/auth/login` | POST | Não | — | Gera JWT token |
+| `/auth/me` | GET | Sim | qualquer | Dados do usuário autenticado |
+| `/predict/mlp` | POST | Sim | **admin** | Predição com MLP (PyTorch) |
+| `/predict/lr` | POST | Sim | qualquer | Predição com Logistic Regression |
+| `/predict/tree` | POST | Sim | qualquer | Predição com Decision Tree |
+| `/docs` | GET | Não | — | Swagger UI |
+
+### Roles e usuários
+
+| Role | Acesso |
+|---|---|
+| `admin` | Todos os endpoints, incluindo `/predict/mlp` |
+| `user` | Apenas baselines (`/predict/lr`, `/predict/tree`) |
+
+Usuários padrão configurados via `.env`. Em produção real, substituir por banco com hash bcrypt.
+
+### Exemplo de uso (curl)
+
+```bash
+# 1. Login (obter JWT)
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}' \
+  | jq -r '.access_token')
+
+# 2. Predizer churn
+curl -X POST http://localhost:8000/predict/mlp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gender": "Female",
+    "SeniorCitizen": 0,
+    "Partner": "No",
+    "Dependents": "No",
+    "tenure": 1,
+    "PhoneService": "Yes",
+    "MultipleLines": "No",
+    "InternetService": "Fiber optic",
+    "OnlineSecurity": "No",
+    "OnlineBackup": "No",
+    "DeviceProtection": "No",
+    "TechSupport": "No",
+    "StreamingTV": "No",
+    "StreamingMovies": "No",
+    "Contract": "Month-to-month",
+    "PaperlessBilling": "Yes",
+    "PaymentMethod": "Electronic check",
+    "MonthlyCharges": 70.0,
+    "TotalCharges": 70.0
+  }'
+# Esperado: {"churn_prediction": 1, "churn_probability": 0.87}
+```
+
+### Postman
+
+Collection pronta em [`docs/postman_collection.json`](docs/postman_collection.json) (importe direto no Postman). [FILL: criar e exportar a collection]
+
+---
+
+## 🧠 Pipeline de ML
+
+### MLflow Model Registry
+
+Os 3 modelos são registrados automaticamente no MLflow Registry com stage `Production` ao final de cada treino:
+
+- `logistic_regression` v1 → Production
+- `decision_tree` v1 → Production
+- `mlp_pytorch` v1 → Production
+
+A API carrega os modelos via `models:/<n>/Production`, garantindo que sempre serve a versão promovida.
+
+### Visualizar experimentos
+
+```bash
+make mlflow                          # http://localhost:5000
+# ou: uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
+```
+
+### Reprodutibilidade
+
+- Seed global `42` em `src/utils/reproducibility.py`
+- Split 70/15/15 estratificado por `Churn`
+- Backend MLflow em SQLite (`mlflow.db`) versionado no repo
+- Hiperparâmetros do MLP fixos (documentados no Model Card)
+
+---
+
+## 🧪 Testes
+
+**151 testes** automatizados, organizados por escopo:
+
+| Categoria | Testes | Cobertura |
+|---|---|---|
+| Unit (`tests/unit/`) | 121 | Data, features, modelos, training, analysis |
+| API (`tests/api/`) | 30 | Health, auth, predict, validação |
+
+```bash
+make test          # com cobertura
+make test-fast     # apenas unit (mais rápido)
+make test-cov      # gera HTML em htmlcov/
+```
+
+**Linting com Ruff:**
+```bash
+make lint          # check apenas
+make format        # auto-fix + format
+```
+
+---
+
+## 🛠️ Stack
+
+| Categoria | Ferramentas |
+|---|---|
+| **ML** | scikit-learn, PyTorch, NumPy, Pandas |
+| **Tracking** | MLflow Registry (SQLite backend) |
+| **API** | FastAPI, Pydantic v2, uvicorn |
+| **Auth** | PyJWT, rate limiting custom |
+| **Observability** | Logging JSON estruturado, middleware de latência |
+| **Testing** | pytest, pytest-cov, pytest-mock, httpx |
+| **Code quality** | Ruff (lint + format) |
+| **Package mgmt** | uv |
+| **Containerization** | Docker (deploy AWS) |
+
+---
+
+## 📚 Documentação
+
+Documentação técnica completa em `docs/`:
+
+| Documento | Descrição |
+|---|---|
+| [`ml_canvas.md`](docs/ml_canvas.md) | Definição do problema e estratégia de ML |
+| [`problem_definition.md`](docs/problem_definition.md) | Detalhamento técnico do problema |
+| [`model_card.md`](docs/model_card.md) | **Model Card** completo (Mitchell et al. 2019, 9 seções) |
+| [`monitoring_plan.md`](docs/monitoring_plan.md) | **Plano de monitoramento** com PSI, alertas e playbooks |
+| [`deployment_architecture.md`](docs/deployment_architecture.md) | **Arquitetura de deploy** (batch + API, AWS App Runner) |
+
+Notebooks consolidados em `notebooks/reports/`:
+
+- `04_compara_modelos.ipynb` — comparação detalhada dos 4 modelos
+- `05_fairness_analysis.ipynb` — análise de viés por subgrupo demográfico
+
+---
+
+## 🐳 Deploy
+
+A API foi projetada para deploy via Docker em **AWS App Runner**. Detalhes em [`docs/deployment_architecture.md`](docs/deployment_architecture.md).
+
+[FILL: link da API em produção, se for fazer o deploy]
+
+```bash
+# Build da imagem Docker
+docker build -t churn-api .
+
+# Run local
+docker run -p 8000:8000 \
+  -e JWT_SECRET=your-secret \
+  -e ADMIN_PASSWORD=admin123 \
+  churn-api
+```
+
+---
+
+## 📦 Datasets
+
+Os dados **não estão versionados**. Faça download e coloque em `data/raw/`:
+
+| Dataset | Fonte | Link |
+|---|---|---|
+| **IBM Telco Customer Churn** (usado) | Kaggle | [Download](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) |
+
+**Sobre os modelos:** após `make train`, os artefatos `.pkl`/`.pt` ficam em `models/` (gitignored). Para rodar a API sem treinar, baixe a release com modelos pré-treinados:
+
+```powershell
+# Windows
+.\scripts\download_model.ps1
+```
 
 ---
 
 
-## 📚 Documentação
+## 🛠️ Comandos disponíveis (Makefile)
 
-A documentação do projeto está disponível em `docs/`:
+```bash
+make help          # Lista todos os targets
+make install       # Instala dependências com uv
+make lint          # Roda ruff check
+make format        # Aplica ruff format + auto-fix
+make test          # Roda pytest com cobertura
+make test-fast     # Apenas unit tests
+make test-cov      # Gera relatório HTML em htmlcov/
+make train         # Treina baselines + MLP
+make compare       # Gera tabela comparativa
+make analyze       # Gera análise de custo FP vs FN
+make api           # Sobe API local em :8000
+make mlflow        # Sobe MLflow UI em :5000
+make clean         # Remove caches
+```
 
-- `ml_canvas.md` → definição do problema e estratégia de ML
-- `problem_definition.md` → detalhamento técnico do problema
-- (futuro) `model_card.md` → descrição do modelo e limitações
+---
+
+## 📈 Pré-requisitos
+
+- **Python 3.12+**
+- **[uv](https://docs.astral.sh/uv/)** para gerenciamento de dependências
+- (Opcional) **Make** para atalhos
+- (Opcional) **Docker** para containerização
+
+> Sobre o uv: [UV Python Gerenciador de Pacotes — Comparativo](https://zocate.li/posts/2026/uv-python-gerenciador-pacotes-comparativo-csharp/)
 
 ---
 
 ## 📝 Licença
 
-Distribuído sob a licença MIT. Consulte `LICENSE` para mais informações.
+Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE) para mais informações.
 
 ---
 
-## 👤 Authors
+## 👤 Autores
 
-**Gabriel**
-Senior DevOps Engineer @ Telefônica Brasil
+**Grupo 2 — 9MLET FIAP**
 
-**Diego**
-Full Stack Developer @ Eldorado Research Institute
-
-**Deyvid**
-Fullstack Developer @ Minsait
-
-**Lucas Molitor**
-Fullstack Developer @ CI&T
+| Nome | Cargo |
+|---|---|
+| **Gabriel Freitas** | Senior DevOps Engineer @ Telefônica Brasil |
+| **Diego** | Full Stack Developer @ Eldorado Research Institute |
+| **Deyvid** | Fullstack Developer @ Minsait |
+| **Lucas Molitor** | Fullstack Developer @ CI&T |
