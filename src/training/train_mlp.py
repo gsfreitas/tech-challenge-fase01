@@ -337,8 +337,6 @@ def run_training(experiment_name: str = MLFLOW_EXPERIMENT_NAME) -> dict: # pragm
         # MLflow pytorch log
         mlflow.pytorch.log_model(model, name="model")
 
-        # Registra no Model Registry como Production
-        # Necessário pra API carregar via `models:/mlp_pytorch/Production`.
         try:
             model_uri = f"runs:/{run.info.run_id}/model"
             registered = mlflow.register_model(model_uri, name="mlp_pytorch")

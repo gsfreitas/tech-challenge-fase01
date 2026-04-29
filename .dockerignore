@@ -1,0 +1,75 @@
+# ============================================================
+# .dockerignore — NÃO entra no build
+# ============================================================
+
+# ambiente virtual local
+.venv/
+venv/
+env/
+
+# caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# build artifacts
+*.egg-info/
+dist/
+build/
+
+# jupyter
+.ipynb_checkpoints/
+notebooks/
+
+# dados
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# documentação
+docs/
+*.md
+!README.md
+
+# tests
+tests/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# SO
+.DS_Store
+Thumbs.db
+
+# git
+.git/
+.gitignore
+.gitattributes
+
+# secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Logs
+*.log
+
+# arquivos do projeto
+LICENSE
+Makefile
+scripts/
+
+# docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
