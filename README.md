@@ -199,7 +199,7 @@ curl -X POST http://localhost:8000/predict/mlp \
 
 ### Postman
 
-Collection pronta em [`docs/postman_collection.json`](docs/postman_collection.json) (importe direto no Postman). [FILL: criar e exportar a collection]
+Collection pronta em [`docs/ChurnAPI.postman_collection`](docs/ChurnAPI.postman_collection)
 
 ---
 
@@ -291,9 +291,7 @@ Notebooks consolidados em `notebooks/reports/`:
 
 ## 🐳 Deploy
 
-A API foi projetada para deploy via Docker em **AWS App Runner**. Detalhes em [`docs/deployment_architecture.md`](docs/deployment_architecture.md).
-
-[FILL: link da API em produção, se for fazer o deploy]
+A API foi projetada para deploy via Docker.
 
 ```bash
 # Build da imagem Docker

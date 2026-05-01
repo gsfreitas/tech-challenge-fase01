@@ -1,0 +1,363 @@
+{
+  "info": {
+    "_postman_id": "07ccdc5a-a8cf-4ad9-903e-283abd712d55",
+    "name": "TC-F01 - Churn API",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53593539",
+    "_collection_link": "https://go.postman.co/collection/53593539-07ccdc5a-a8cf-4ad9-903e-283abd712d55?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "if (response.access_token) {",
+              "    pm.collectionVariables.set(\"token\", response.access_token);",
+              "    console.log(\"Token salvo na variável da collection\");",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "Auth/Me",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              "if (response.access_token) {\r",
+              "    pm.collectionVariables.set(\"token\", response.access_token);\r",
+              "    console.log(\"Token salvo na variável da collection\");\r",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "HealthCheck",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "PredictMLP-Churn=1",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gender\": \"Female\",\r\n    \"SeniorCitizen\": 0,\r\n    \"Partner\": \"No\",\r\n    \"Dependents\": \"No\",\r\n    \"tenure\": 1,\r\n    \"PhoneService\": \"Yes\",\r\n    \"MultipleLines\": \"No\",\r\n    \"InternetService\": \"Fiber optic\",\r\n    \"OnlineSecurity\": \"No\",\r\n    \"OnlineBackup\": \"No\",\r\n    \"DeviceProtection\": \"No\",\r\n    \"TechSupport\": \"No\",\r\n    \"StreamingTV\": \"No\",\r\n    \"StreamingMovies\": \"No\",\r\n    \"Contract\": \"Month-to-month\",\r\n    \"PaperlessBilling\": \"Yes\",\r\n    \"PaymentMethod\": \"Electronic check\",\r\n    \"MonthlyCharges\": 70.0,\r\n    \"TotalCharges\": 70.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/mlp",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "mlp"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PredictLR-Churn=1",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gender\": \"Female\",\r\n    \"SeniorCitizen\": 0,\r\n    \"Partner\": \"No\",\r\n    \"Dependents\": \"No\",\r\n    \"tenure\": 1,\r\n    \"PhoneService\": \"Yes\",\r\n    \"MultipleLines\": \"No\",\r\n    \"InternetService\": \"Fiber optic\",\r\n    \"OnlineSecurity\": \"No\",\r\n    \"OnlineBackup\": \"No\",\r\n    \"DeviceProtection\": \"No\",\r\n    \"TechSupport\": \"No\",\r\n    \"StreamingTV\": \"No\",\r\n    \"StreamingMovies\": \"No\",\r\n    \"Contract\": \"Month-to-month\",\r\n    \"PaperlessBilling\": \"Yes\",\r\n    \"PaymentMethod\": \"Electronic check\",\r\n    \"MonthlyCharges\": 70.0,\r\n    \"TotalCharges\": 70.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/lr",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "lr"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PredictTree-Churn=1",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gender\": \"Female\",\r\n    \"SeniorCitizen\": 0,\r\n    \"Partner\": \"No\",\r\n    \"Dependents\": \"No\",\r\n    \"tenure\": 1,\r\n    \"PhoneService\": \"Yes\",\r\n    \"MultipleLines\": \"No\",\r\n    \"InternetService\": \"Fiber optic\",\r\n    \"OnlineSecurity\": \"No\",\r\n    \"OnlineBackup\": \"No\",\r\n    \"DeviceProtection\": \"No\",\r\n    \"TechSupport\": \"No\",\r\n    \"StreamingTV\": \"No\",\r\n    \"StreamingMovies\": \"No\",\r\n    \"Contract\": \"Month-to-month\",\r\n    \"PaperlessBilling\": \"Yes\",\r\n    \"PaymentMethod\": \"Electronic check\",\r\n    \"MonthlyCharges\": 70.0,\r\n    \"TotalCharges\": 70.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/tree",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "tree"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PredictMLP-Churn=0",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gender\": \"Male\",\r\n    \"SeniorCitizen\": 0,\r\n    \"Partner\": \"Yes\",\r\n    \"Dependents\": \"Yes\",\r\n    \"tenure\": 60,\r\n    \"PhoneService\": \"Yes\",\r\n    \"MultipleLines\": \"Yes\",\r\n    \"InternetService\": \"DSL\",\r\n    \"OnlineSecurity\": \"Yes\",\r\n    \"OnlineBackup\": \"Yes\",\r\n    \"DeviceProtection\": \"Yes\",\r\n    \"TechSupport\": \"Yes\",\r\n    \"StreamingTV\": \"Yes\",\r\n    \"StreamingMovies\": \"Yes\",\r\n    \"Contract\": \"Two year\",\r\n    \"PaperlessBilling\": \"No\",\r\n    \"PaymentMethod\": \"Bank transfer (automatic)\",\r\n    \"MonthlyCharges\": 90.0,\r\n    \"TotalCharges\": 5400.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/mlp",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "mlp"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PredictLR-Churn=0",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gender\": \"Male\",\r\n    \"SeniorCitizen\": 0,\r\n    \"Partner\": \"Yes\",\r\n    \"Dependents\": \"Yes\",\r\n    \"tenure\": 60,\r\n    \"PhoneService\": \"Yes\",\r\n    \"MultipleLines\": \"Yes\",\r\n    \"InternetService\": \"DSL\",\r\n    \"OnlineSecurity\": \"Yes\",\r\n    \"OnlineBackup\": \"Yes\",\r\n    \"DeviceProtection\": \"Yes\",\r\n    \"TechSupport\": \"Yes\",\r\n    \"StreamingTV\": \"Yes\",\r\n    \"StreamingMovies\": \"Yes\",\r\n    \"Contract\": \"Two year\",\r\n    \"PaperlessBilling\": \"No\",\r\n    \"PaymentMethod\": \"Bank transfer (automatic)\",\r\n    \"MonthlyCharges\": 90.0,\r\n    \"TotalCharges\": 5400.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/lr",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "lr"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PredictTree-Churn=0",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gender\": \"Male\",\r\n    \"SeniorCitizen\": 0,\r\n    \"Partner\": \"Yes\",\r\n    \"Dependents\": \"Yes\",\r\n    \"tenure\": 60,\r\n    \"PhoneService\": \"Yes\",\r\n    \"MultipleLines\": \"Yes\",\r\n    \"InternetService\": \"DSL\",\r\n    \"OnlineSecurity\": \"Yes\",\r\n    \"OnlineBackup\": \"Yes\",\r\n    \"DeviceProtection\": \"Yes\",\r\n    \"TechSupport\": \"Yes\",\r\n    \"StreamingTV\": \"Yes\",\r\n    \"StreamingMovies\": \"Yes\",\r\n    \"Contract\": \"Two year\",\r\n    \"PaperlessBilling\": \"No\",\r\n    \"PaymentMethod\": \"Bank transfer (automatic)\",\r\n    \"MonthlyCharges\": 90.0,\r\n    \"TotalCharges\": 5400.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/predict/tree",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict",
+            "tree"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
