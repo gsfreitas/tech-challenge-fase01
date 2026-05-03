@@ -136,12 +136,3 @@ Decisões operacionais finais permanecem com agentes humanos — o modelo **prio
 | **Vieses demográficos** | Decisões discriminatórias (gênero, idade) | Avaliação de fairness segmentada por `gender` e `SeniorCitizen` no Model Card |
 | **Deriva de comportamento** pós-promoção ou mudança de pricing | Modelo desatualiza rápido | Monitoramento de drift + retrain trigger automático |
 | **Dataset público vs. realidade** | Dataset IBM não reflete 100% a operação real; generalização limitada | Documentar limitação explícita no Model Card; tratar como PoC acadêmico |
-
----
-
-## Restrições do Projeto
-
-- Dataset tabular, tamanho moderado (~7k linhas) — não justifica arquiteturas complexas; MLP raso é adequado.
-- Classificação binária com classes desbalanceadas.
-- Entrega obrigatória: rede neural (PyTorch) comparada com baselines (Scikit-Learn), rastreada em MLflow, exposta via FastAPI.
-- Prazo: 05/05/2026.
